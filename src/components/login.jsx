@@ -137,7 +137,7 @@ class Registration extends Component {
               className={classes.button}
               type='submit'
               onClick={this.submitRegistration}>
-              Login{' '}
+              Login
             </Button>
           </form>
           {this.state.error ? (
