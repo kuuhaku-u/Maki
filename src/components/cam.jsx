@@ -1,13 +1,11 @@
 import React from 'react';
 import axios from 'axios';
-
 export class Cam extends React.Component {
   state = {
     isSupported: true,
     isPhoto: false,
     pass: '',
   };
-
   componentDidMount() {
     const mediaDevices =
       navigator.mediaDevices || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -17,16 +15,13 @@ export class Cam extends React.Component {
     }
     mediaDevices.getUserMedia({ video: true }).then(this.handleVideo).catch(this.videoError);
   }
-
   handleVideo = (stream) => {
     this.videoElement.srcObject = stream;
     this.videoElement.play();
   };
-
   videoError = (err) => {
     //...
   };
-
   Video = () => (
     <React.Fragment>
       <video
@@ -41,7 +36,6 @@ export class Cam extends React.Component {
       <button onClick={this.handleCapture}>capture photo</button>
     </React.Fragment>
   );
-
   Canvas = () => (
     <React.Fragment>
       <canvas
@@ -63,38 +57,26 @@ export class Cam extends React.Component {
       )}
     </React.Fragment>
   );
-
   handleCapture = () => {
     if (this.canvasElement && this.videoElement) {
       const context = this.canvasElement.getContext('2d');
       context.drawImage(this.videoElement, 0, 0, 320, 240);
-      this.dataURL = this.canvasElement.toDataURL('image/png');
-      this.setState({ isPhoto: true }, () => {
-        this.btn.href = this.dataURL;
-      });
+      this.canvasElement.toBlob((blob) => {
+        this.setState({ isPhoto: true }, () => {
+          this.uploadImage(blob);
+        });
+      }, 'image/png');
     }
-    this.handleUpload();
   };
-
-  handlePassChange = (e) => {
-    this.setState({
-      pass: e.target.value,
-    });
+  uploadImage = (blob) => {
+    const formData = new FormData();
+    formData.append('image', blob, 'captured.png');
+    formData.append('pass', this.state.pass);
+    axios.post('http://localhost:8000/image', formData).then(
+      () => alert('uploaded'),
+      () => alert('noop'),
+    );
   };
-
-  handleUpload = () => {
-    console.log(this.dataURL);
-    axios
-      .post('http://localhost:8000/image', {
-        data: this.dataURL,
-        pass: this.state.pass,
-      })
-      .then(
-        () => alert('uploaded'),
-        () => alert('noop'),
-      );
-  };
-
   render() {
     return (
       <div>
